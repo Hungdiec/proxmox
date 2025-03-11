@@ -1,18 +1,27 @@
-   version: v1.0
-   name: Terraform Proxmox Pipeline
-   agent:
-     machine:
-       type: e1-standard-2
-       os_image: ubuntu2004
-   
-   blocks:
-     - name: "Setup"
-       task:
-         jobs:
-           - name: "Install Terraform"
-             commands:
-               - checkout
-               - curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-               - sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-               - sudo apt-get update && sudo apt-get install terraform
-               - terraform --version
+version: v1.0
+name: Proxmox VM Automation
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu2404
+
+blocks:
+  - name: "Deploy Proxmox VM"
+    task:
+      secrets:
+        - name: proxmox-credentials
+      jobs:
+        - name: "Create VM from Template"
+          commands:
+            - checkout
+            
+            # Use Docker to run Terraform commands
+            - echo "Creating credentials file..."
+            - echo "proxmox_api_url = \"$PROXMOX_API_URL\"" > credentials.auto.tfvars
+            - echo "proxmox_api_token_id = \"$PROXMOX_API_TOKEN_ID\"" >> credentials.auto.tfvars
+            - echo "proxmox_api_token = \"$PROXMOX_API_TOKEN\"" >> credentials.auto.tfvars
+            
+            # Run Terraform init and apply using Docker
+            - docker run --rm -v $(pwd):/terraform -w /terraform hashicorp/terraform:latest init
+            - docker run --rm -v $(pwd):/terraform -w /terraform hashicorp/terraform:latest validate
+            - docker run --rm -v $(pwd):/terraform -w /terraform hashicorp/terraform:latest apply -auto-approve
