@@ -22,7 +22,7 @@ blocks:
             - echo "proxmox_api_token = \"$PROXMOX_API_TOKEN\"" >> credentials.auto.tfvars
             
             # Run Terraform init and apply using Docker
-            - cd /home/hung/promox
+            - cd /home/hung/proxmox
             - sudo docker-compose run --rm terraform init
             - sudo docker-compose run --rm terraform validate
             - sudo docker-compose run --rm terraform apply -auto-approve
