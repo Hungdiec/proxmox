@@ -1,0 +1,18 @@
+   version: v1.0
+   name: Terraform Proxmox Pipeline
+   agent:
+     machine:
+       type: e1-standard-2
+       os_image: ubuntu2004
+   
+   blocks:
+     - name: "Setup"
+       task:
+         jobs:
+           - name: "Install Terraform"
+             commands:
+               - checkout
+               - curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+               - sudo apt-add-repository "deb [arch=amd64] https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+               - sudo apt-get update && sudo apt-get install terraform
+               - terraform --version
